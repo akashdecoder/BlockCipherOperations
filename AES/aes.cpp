@@ -63,3 +63,17 @@ void expandedKey(byte key[4*Nk], word key_array_32[4*(Nr+1)]){
         ++i;
     }
 }
+
+void addRoundKey(byte state_array[16], word in_key[4]){
+    for(int i=0; i<4; i++){
+        word k1 = in_key[i] >> 24;
+        word k2 = (in_key[i] << 8) >> 24;
+        word k3 = (in_key[i] << 16) >> 24;
+        word k4 = (in_key[i] << 24) >> 24;
+
+        state_array[i] = state_array[i] ^ byte(k1.to_ulong());
+        state_array[i+4] = state_array[i+4] ^ byte(k2.to_ulong());
+        state_array[i+8] = state_array[i+8] ^ byte(k3.to_ulong());
+        state_array[i+12] = state_array[i+12] ^ byte(k4.to_ulong());
+    }
+}
