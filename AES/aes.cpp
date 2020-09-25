@@ -77,3 +77,34 @@ void addRoundKey(byte state_array[16], word in_key[4]){
         state_array[i+12] = state_array[i+12] ^ byte(k4.to_ulong());
     }
 }
+
+void subBytes(byte state_array[16]){
+    for(int i=0; i<16; i++){
+        int row = state_array[i][7]*8 + state_array[i][6]*4 + state_array[i][5]*2 + state_array[i][4];
+        int col = state_array[i][3]*8 + state_array[i][2]*4 + state_array[i][1]*2 + state_array[i][0];
+        state_array[i] = s_box[row][col];
+    }
+}
+
+void shiftRows(byte state_array[16]){
+    /*second row of the state_matrix(one bit to left)*/
+    byte temp = state_array[4];
+    for(int i=0; i<3; i++){
+        state_array[i+4] = state_array[i+5];
+    }
+    state_array[7] = temp;
+
+    /*third row of the state matrix(two bit to left)*/
+    for(int i=0; i<2; i++){
+        temp = state_array[i+8];
+        state_array[i+8] = state_array[i+10];
+        state_array[i+10] = temp;
+    }
+
+    /*fourth row of the state matrix(three bit to left)*/
+    temp = state_array[15];
+    for(int i=3; i>0; i--){
+        state_array[i+12] = state_array[i+11];
+    }
+    state_array[12] = temp;
+}

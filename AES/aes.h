@@ -43,5 +43,7 @@ word rotWord(word);
 word subWord(word);
 void expandedKey(byte key[4*Nk], word key_array_32[4*(Nr+1)]);
 void addRoundKey(byte state_array[16], word in_key[4]);
+void subBytes(byte state_array[16]);
+void shiftRows(byte state_array[16]);
 
 #endif
