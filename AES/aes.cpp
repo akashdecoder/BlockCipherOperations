@@ -44,6 +44,7 @@ word subWord(word org_word){
     return temp;
 }
 
+/*Expanding the input key*/
 void expandedKey(byte key[4*Nk], word key_array_32[4*(Nr+1)]){
     word temp;
     int i = 0;
@@ -64,6 +65,7 @@ void expandedKey(byte key[4*Nk], word key_array_32[4*(Nr+1)]){
     }
 }
 
+/*Key Addition Dunction*/
 void addRoundKey(byte state_array[16], word in_key[4]){
     for(int i=0; i<4; i++){
         word k1 = in_key[i] >> 24;
@@ -78,6 +80,7 @@ void addRoundKey(byte state_array[16], word in_key[4]){
     }
 }
 
+/*Substition layer*/
 void subBytes(byte state_array[16]){
     for(int i=0; i<16; i++){
         int row = state_array[i][7]*8 + state_array[i][6]*4 + state_array[i][5]*2 + state_array[i][4];
@@ -86,6 +89,7 @@ void subBytes(byte state_array[16]){
     }
 }
 
+/*Shift Rows sub layer*/
 void shiftRows(byte state_array[16]){
     /*second row of the state_matrix(one bit to left)*/
     byte temp = state_array[4];
@@ -109,6 +113,7 @@ void shiftRows(byte state_array[16]){
     state_array[12] = temp;
 }
 
+/*Doing Galois Field Multiplication: Internet Source*/
 byte GFMul(byte b1, byte b2){
     byte x = 0;
     byte high_bit_set;
@@ -127,6 +132,7 @@ byte GFMul(byte b1, byte b2){
     return x;  
 }
 
+/*Mix Column Sublayer*/
 void mixColumn(byte state_array[16]){
     byte temp[4];
     for(int i=0; i<4; i++){
@@ -136,7 +142,7 @@ void mixColumn(byte state_array[16]){
         state_array[i] = GFMul(0x02, temp[0]) ^ GFMul(0x03, temp[1]) ^ temp[2] ^ temp[3];
         state_array[i+4] = temp[0] ^ GFMul(0x02, temp[1]) ^ GFMul(0x03, temp[2]) ^ temp[3];
         state_array[i+8] = temp[0] ^ temp[1] ^ GFMul(0x02, temp[2]) ^ GFMul(0x03, temp[3]);
-        state_array[i+12] = GFMul(0x03, temp[0]) ^ temp[2] ^ GFMul(0x02, temp[3]);
+        state_array[i+12] = GFMul(0x03, temp[0]) ^ temp[1] ^ temp[2] ^ GFMul(0x02, temp[3]);
     }
 }
 
@@ -166,6 +172,77 @@ void aes_encrypt(byte state_array[16], word key_array32[4*(Nr+1)]){
         aes_key[i] = key_array32[4*Nr+i];
     }
     addRoundKey(state_array, aes_key);
+}
 
+/*Inverse Substitution Layer*/
+void inv_subBytes(byte cipher_state_array[16]){
+    for(int i=0; i<16; i++){
+        int row = cipher_state_array[i][7]*8 + cipher_state_array[i][6]*4 + cipher_state_array[i][5]*2 + cipher_state_array[i][4];
+        int col = cipher_state_array[i][3]*8 + cipher_state_array[i][2]*4 + cipher_state_array[i][1]*2 + cipher_state_array[i][0];
+        cipher_state_array[i] = inv_s_box[row][col];
+    }
+}
 
+/*Inverse Shift Rows Sub Layer*/
+void inv_shiftRows(byte cipher_state_array[16]){
+    /*second row of the state_matrix(one bit to right)*/
+    byte temp = cipher_state_array[7];
+    for(int i=3; i>0; i--){
+        cipher_state_array[i+4] = cipher_state_array[i+5];
+    }
+    cipher_state_array[4] = temp;
+
+    /*third row of the state matrix(two bit to left)*/
+    for(int i=0; i<2; i++){
+        temp = cipher_state_array[i+8];
+        cipher_state_array[i+8] = cipher_state_array[i+10];
+        cipher_state_array[i+10] = temp;
+    }
+
+    /*fourth row of the state matrix(three bit to left)*/
+    temp = cipher_state_array[12];
+    for(int i=0; i<3; i++){
+        cipher_state_array[i+12] = cipher_state_array[i+13];
+    }
+    cipher_state_array[15] = temp;
+}
+
+/*Inverse Mix Column Sub Layer*/
+void inv_mixColumn(byte cipher_state_array[16]){
+    byte temp[4];
+    for(int i=0; i<4; i++){
+        for(int j=0; j<4; j++){
+            temp[j] = cipher_state_array[i+j*4];
+        }
+        cipher_state_array[i] = GFMul(0x0e, temp[0]) ^ GFMul(0x0b, temp[1]) ^ GFMul(0x0d, temp[2]) ^ GFMul(0x09, temp[3]);
+        cipher_state_array[i+4] = GFMul(0x09, temp[0]) ^ GFMul(0x0e, temp[1]) ^ GFMul(0x0b, temp[2]) ^ GFMul(0x0d, temp[3]);
+        cipher_state_array[i+8] = GFMul(0x0d, temp[0]) ^ GFMul(0x09, temp[1]) ^ GFMul(0x0e, temp[2]) ^ GFMul(0x0b, temp[3]);
+        cipher_state_array[i+12] = GFMul(0x0b, temp[0]) ^ GFMul(0x0d, temp[1]) ^ GFMul(0x09, temp[2]) ^ GFMul(0x0e, temp[3]);
+    }
+}
+
+/*Decryption Function*/
+void aes_decrypt(byte cipher_state_array[16], word key_array32[4*(Nr+1)]){
+    word aes_key[4];
+    for(int i=0; i<4; i++){
+        aes_key[i] = key_array32[4*Nr+i];
+    }
+    addRoundKey(cipher_state_array, aes_key);
+
+    for(int aes_rounds=Nr-1; aes_rounds>0; aes_rounds--){
+        inv_shiftRows(cipher_state_array);
+        inv_subBytes(cipher_state_array);
+        for(int j=0; j<4; j++){
+            aes_key[j] = key_array32[4*aes_rounds+j];
+        }
+        addRoundKey(cipher_state_array, aes_key);
+        inv_mixColumn(cipher_state_array);
+    }
+
+    inv_shiftRows(cipher_state_array);
+    inv_subBytes(cipher_state_array);
+    for(int i=0; i<4; i++){
+        aes_key[i] = key_array32[i];
+    }
+    addRoundKey(cipher_state_array, aes_key);
 }
