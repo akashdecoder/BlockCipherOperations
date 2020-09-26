@@ -82,9 +82,7 @@ int main(){
     }
 
     /*Encryption*/
-    cout<<endl;
-    cout<<"\n\n";
-    cout<<"Encrypted Text:\n";
+    cout<<"\n\nEncrypted Text:\n";
     for(int i=0; i<c; i++){
         for(int j=0; j<16; j++){
             state_array[j] = plaintext_array[i][j];
@@ -96,7 +94,7 @@ int main(){
         for(int k=0;k<16; k++){
             if(k>0 && k%4 == 0)
                 cout<<endl;
-            cout<<dec<<state_array[k].to_ulong()<<"\t";
+            cout<<hex<<state_array[k].to_ulong()<<"\t";
         }
         cout<<"\n\n";
     }
@@ -109,16 +107,12 @@ int main(){
         }
         aes_decrypt(cipher_state_array, key_array_32);
         for(int k=0;k<16; k++){
-            if(k>0 && k%4 == 0)
-                cout<<endl;
-            cout<<dec<<cipher_state_array[k].to_ulong()<<"\t";
+            // if(k>0 && k%4 == 0)
+            //     cout<<endl;
+            cout<<(char)cipher_state_array[k].to_ulong();
         }
-        cout<<"\n\n";
+        // cout<<"\n\n";
     }
-
-
-    cout<<endl;
-
     cout<<endl;
     return 0;
 
