@@ -148,20 +148,20 @@ void mixColumn(byte state_array[16]){
 
 
 /*Encryption Function*/
-void aes_encrypt(byte state_array[16], word key_array32[4*(Nr+1)]){
+void aes_encrypt(byte state_array[16], word key_array_32[4*(Nr+1)]){
     word aes_key[4];
     for(int i=0; i<4; i++){
-        aes_key[i] = key_array32[i];
+        aes_key[i] = key_array_32[i];
     }
 
     addRoundKey(state_array, aes_key);
 
-    for(int aes_round=0; aes_round < Nr; aes_round++){
+    for(int aes_round=1; aes_round < Nr; aes_round++){
         subBytes(state_array);
         shiftRows(state_array);
         mixColumn(state_array);
         for(int j=0; j<4; j++){
-            aes_key[j] = key_array32[4*aes_round+j];
+            aes_key[j] = key_array_32[4*aes_round+j];
         }
         addRoundKey(state_array, aes_key);
     }
@@ -169,10 +169,11 @@ void aes_encrypt(byte state_array[16], word key_array32[4*(Nr+1)]){
     subBytes(state_array);
     shiftRows(state_array);
     for(int i=0; i<4; i++){
-        aes_key[i] = key_array32[4*Nr+i];
+        aes_key[i] = key_array_32[4*Nr+i];
     }
     addRoundKey(state_array, aes_key);
 }
+
 
 /*Inverse Substitution Layer*/
 void inv_subBytes(byte cipher_state_array[16]){
@@ -188,7 +189,7 @@ void inv_shiftRows(byte cipher_state_array[16]){
     /*second row of the state_matrix(one bit to right)*/
     byte temp = cipher_state_array[7];
     for(int i=3; i>0; i--){
-        cipher_state_array[i+4] = cipher_state_array[i+5];
+        cipher_state_array[i+4] = cipher_state_array[i+3];
     }
     cipher_state_array[4] = temp;
 
@@ -222,10 +223,10 @@ void inv_mixColumn(byte cipher_state_array[16]){
 }
 
 /*Decryption Function*/
-void aes_decrypt(byte cipher_state_array[16], word key_array32[4*(Nr+1)]){
+void aes_decrypt(byte cipher_state_array[16], word key_array_32[4*(Nr+1)]){
     word aes_key[4];
     for(int i=0; i<4; i++){
-        aes_key[i] = key_array32[4*Nr+i];
+        aes_key[i] = key_array_32[4*Nr+i];
     }
     addRoundKey(cipher_state_array, aes_key);
 
@@ -233,7 +234,7 @@ void aes_decrypt(byte cipher_state_array[16], word key_array32[4*(Nr+1)]){
         inv_shiftRows(cipher_state_array);
         inv_subBytes(cipher_state_array);
         for(int j=0; j<4; j++){
-            aes_key[j] = key_array32[4*aes_rounds+j];
+            aes_key[j] = key_array_32[4*aes_rounds+j];
         }
         addRoundKey(cipher_state_array, aes_key);
         inv_mixColumn(cipher_state_array);
@@ -242,7 +243,7 @@ void aes_decrypt(byte cipher_state_array[16], word key_array32[4*(Nr+1)]){
     inv_shiftRows(cipher_state_array);
     inv_subBytes(cipher_state_array);
     for(int i=0; i<4; i++){
-        aes_key[i] = key_array32[i];
+        aes_key[i] = key_array_32[i];
     }
     addRoundKey(cipher_state_array, aes_key);
 }
