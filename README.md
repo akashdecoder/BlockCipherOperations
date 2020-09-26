@@ -1,5 +1,8 @@
+#Project Details
+
 Cryptogrhapic Algorithms in C++.
 
-Commit1: Added the AES Key schedule algorithm.
 
-create shared library(for linux only): https://www.geeksforgeeks.org/working-with-shared-libraries-set-2/
+####Link: how to work with shared libraries in linux
+
+https://www.geeksforgeeks.org/working-with-shared-libraries-set-2/
