@@ -1,10 +1,21 @@
+#ifdef _WIN32
+#include <iostream>
+#include <bitset>
+#include <cstring>
+#include <cstdlib>
+#include <sstream>
+#include <iomanip>
+#elif __unix_
 #include <bits/stdc++.h>
+#endif
+
 #include "aes.h"
+
 using namespace std;
 
-word getWord(byte b1, byte b2, byte b3, byte b4){
-    word result(0x00000000);
-    word temp;
+Word getWord(Byte b1, Byte b2, Byte b3, Byte b4){
+    Word result(0x00000000);
+    Word temp;
 
     temp = b1.to_ulong();
     temp <<= 24;
@@ -24,19 +35,19 @@ word getWord(byte b1, byte b2, byte b3, byte b4){
     return result;
 }
 
-word rotWord(word org_word){
-    word w1 = org_word << 8;
-    word w2 = org_word >> 24;
+Word rotWord(Word org_Word){
+    Word w1 = org_Word << 8;
+    Word w2 = org_Word >> 24;
     return w1 | w2;
 }
 
-word subWord(word org_word){
-    word temp;
+Word subWord(Word org_Word){
+    Word temp;
     for(int i=0; i<32; i+=8){
-        int row = org_word[i+7]*8 + org_word[i+6]*4 + org_word[i+5]*2 + org_word[i+4];
-        int col = org_word[i+3]*8 + org_word[i+2]*4 + org_word[i+1]*2 + org_word[i];
+        int row = org_Word[i+7]*8 + org_Word[i+6]*4 + org_Word[i+5]*2 + org_Word[i+4];
+        int col = org_Word[i+3]*8 + org_Word[i+2]*4 + org_Word[i+1]*2 + org_Word[i];
 
-        byte val = s_box[row][col];
+        Byte val = s_box[row][col];
         for(int j=0; j<8; j++){
             temp[i+j] = val[j];
         }
@@ -45,8 +56,8 @@ word subWord(word org_word){
 }
 
 /*Expanding the input key*/
-void expandedKey(byte key[4*Nk], word key_array_32[4*(Nr+1)]){
-    word temp;
+void expandedKey(Byte key[4*Nk], Word key_array_32[4*(Nr+1)]){
+    Word temp;
     int i = 0;
 
     while(i < Nk){
@@ -66,22 +77,22 @@ void expandedKey(byte key[4*Nk], word key_array_32[4*(Nr+1)]){
 }
 
 /*Key Addition Dunction*/
-void addRoundKey(byte state_array[16], word in_key[4]){
+void addRoundKey(Byte state_array[16], Word in_key[4]){
     for(int i=0; i<4; i++){
-        word k1 = in_key[i] >> 24;
-        word k2 = (in_key[i] << 8) >> 24;
-        word k3 = (in_key[i] << 16) >> 24;
-        word k4 = (in_key[i] << 24) >> 24;
+        Word k1 = in_key[i] >> 24;
+        Word k2 = (in_key[i] << 8) >> 24;
+        Word k3 = (in_key[i] << 16) >> 24;
+        Word k4 = (in_key[i] << 24) >> 24;
 
-        state_array[i] = state_array[i] ^ byte(k1.to_ulong());
-        state_array[i+4] = state_array[i+4] ^ byte(k2.to_ulong());
-        state_array[i+8] = state_array[i+8] ^ byte(k3.to_ulong());
-        state_array[i+12] = state_array[i+12] ^ byte(k4.to_ulong());
+        state_array[i] = state_array[i] ^ Byte(k1.to_ulong());
+        state_array[i+4] = state_array[i+4] ^ Byte(k2.to_ulong());
+        state_array[i+8] = state_array[i+8] ^ Byte(k3.to_ulong());
+        state_array[i+12] = state_array[i+12] ^ Byte(k4.to_ulong());
     }
 }
 
 /*Substition layer*/
-void subBytes(byte state_array[16]){
+void subBytes(Byte state_array[16]){
     for(int i=0; i<16; i++){
         int row = state_array[i][7]*8 + state_array[i][6]*4 + state_array[i][5]*2 + state_array[i][4];
         int col = state_array[i][3]*8 + state_array[i][2]*4 + state_array[i][1]*2 + state_array[i][0];
@@ -90,9 +101,9 @@ void subBytes(byte state_array[16]){
 }
 
 /*Shift Rows sub layer*/
-void shiftRows(byte state_array[16]){
+void shiftRows(Byte state_array[16]){
     /*second row of the state_matrix(one bit to left)*/
-    byte temp = state_array[4];
+    Byte temp = state_array[4];
     for(int i=0; i<3; i++){
         state_array[i+4] = state_array[i+5];
     }
@@ -114,14 +125,14 @@ void shiftRows(byte state_array[16]){
 }
 
 /*Doing Galois Field Multiplication: Internet Source*/
-byte GFMul(byte b1, byte b2){
-    byte x = 0;
-    byte high_bit_set;
+Byte GFMul(Byte b1, Byte b2){
+    Byte x = 0;
+    Byte high_bit_set;
     for(int i=0; i<8; i++){
-        if((b2 & byte(1)) != 0){
+        if((b2 & Byte(1)) != 0){
             x ^= b1;
         }
-        high_bit_set = (byte)(b1 & byte(0x80));
+        high_bit_set = (Byte)(b1 & Byte(0x80));
         b1 <<= 1;
 
         if(high_bit_set != 0){
@@ -133,8 +144,8 @@ byte GFMul(byte b1, byte b2){
 }
 
 /*Mix Column Sublayer*/
-void mixColumn(byte state_array[16]){
-    byte temp[4];
+void mixColumn(Byte state_array[16]){
+    Byte temp[4];
     for(int i=0; i<4; i++){
         for(int j=0; j<4; j++){
             temp[j] = state_array[i+j*4];
@@ -148,8 +159,8 @@ void mixColumn(byte state_array[16]){
 
 
 /*Encryption Function*/
-void aes_encrypt(byte state_array[16], word key_array_32[4*(Nr+1)]){
-    word aes_key[4];
+void aes_encrypt(Byte state_array[16], Word key_array_32[4*(Nr+1)]){
+    Word aes_key[4];
     for(int i=0; i<4; i++){
         aes_key[i] = key_array_32[i];
     }
@@ -176,7 +187,7 @@ void aes_encrypt(byte state_array[16], word key_array_32[4*(Nr+1)]){
 
 
 /*Inverse Substitution Layer*/
-void inv_subBytes(byte cipher_state_array[16]){
+void inv_subBytes(Byte cipher_state_array[16]){
     for(int i=0; i<16; i++){
         int row = cipher_state_array[i][7]*8 + cipher_state_array[i][6]*4 + cipher_state_array[i][5]*2 + cipher_state_array[i][4];
         int col = cipher_state_array[i][3]*8 + cipher_state_array[i][2]*4 + cipher_state_array[i][1]*2 + cipher_state_array[i][0];
@@ -185,9 +196,9 @@ void inv_subBytes(byte cipher_state_array[16]){
 }
 
 /*Inverse Shift Rows Sub Layer*/
-void inv_shiftRows(byte cipher_state_array[16]){
+void inv_shiftRows(Byte cipher_state_array[16]){
     /*second row of the state_matrix(one bit to right)*/
-    byte temp = cipher_state_array[7];
+    Byte temp = cipher_state_array[7];
     for(int i=3; i>0; i--){
         cipher_state_array[i+4] = cipher_state_array[i+3];
     }
@@ -209,8 +220,8 @@ void inv_shiftRows(byte cipher_state_array[16]){
 }
 
 /*Inverse Mix Column Sub Layer*/
-void inv_mixColumn(byte cipher_state_array[16]){
-    byte temp[4];
+void inv_mixColumn(Byte cipher_state_array[16]){
+    Byte temp[4];
     for(int i=0; i<4; i++){
         for(int j=0; j<4; j++){
             temp[j] = cipher_state_array[i+j*4];
@@ -223,8 +234,8 @@ void inv_mixColumn(byte cipher_state_array[16]){
 }
 
 /*Decryption Function*/
-void aes_decrypt(byte cipher_state_array[16], word key_array_32[4*(Nr+1)]){
-    word aes_key[4];
+void aes_decrypt(Byte cipher_state_array[16], Word key_array_32[4*(Nr+1)]){
+    Word aes_key[4];
     for(int i=0; i<4; i++){
         aes_key[i] = key_array_32[4*Nr+i];
     }

@@ -1,7 +1,17 @@
 #ifndef __AES_H__
 #define __AES_H__
 
+#ifdef _WIN32
+#include <iostream>
+#include <bitset>
+#include <cstring>
+#include <cstdlib>
+#include <sstream>
+#include <iomanip>
+#elif __unix_
 #include <bits/stdc++.h>
+#endif
+
 using namespace std;
 
 #define MAXSIZE 10000
@@ -12,10 +22,12 @@ using namespace std;
 #define Nr 10   //Key = 128 bits long
 #define Nk 4
 
-typedef bitset<32> word;
-typedef bitset<8> byte;
 
-byte s_box[16][16] = {  
+
+typedef bitset<32> Word;
+typedef bitset<8> Byte;
+
+Byte s_box[16][16] = {  
     {0x63, 0x7C, 0x77, 0x7B, 0xF2, 0x6B, 0x6F, 0xC5, 0x30, 0x01, 0x67, 0x2B, 0xFE, 0xD7, 0xAB, 0x76},  
     {0xCA, 0x82, 0xC9, 0x7D, 0xFA, 0x59, 0x47, 0xF0, 0xAD, 0xD4, 0xA2, 0xAF, 0x9C, 0xA4, 0x72, 0xC0},  
     {0xB7, 0xFD, 0x93, 0x26, 0x36, 0x3F, 0xF7, 0xCC, 0x34, 0xA5, 0xE5, 0xF1, 0x71, 0xD8, 0x31, 0x15},  
@@ -34,7 +46,7 @@ byte s_box[16][16] = {
     {0x8C, 0xA1, 0x89, 0x0D, 0xBF, 0xE6, 0x42, 0x68, 0x41, 0x99, 0x2D, 0x0F, 0xB0, 0x54, 0xBB, 0x16}  
 };
 
-byte inv_s_box[16][16] = {  
+Byte inv_s_box[16][16] = {  
     {0x52, 0x09, 0x6A, 0xD5, 0x30, 0x36, 0xA5, 0x38, 0xBF, 0x40, 0xA3, 0x9E, 0x81, 0xF3, 0xD7, 0xFB},  
     {0x7C, 0xE3, 0x39, 0x82, 0x9B, 0x2F, 0xFF, 0x87, 0x34, 0x8E, 0x43, 0x44, 0xC4, 0xDE, 0xE9, 0xCB},  
     {0x54, 0x7B, 0x94, 0x32, 0xA6, 0xC2, 0x23, 0x3D, 0xEE, 0x4C, 0x95, 0x0B, 0x42, 0xFA, 0xC3, 0x4E},  
@@ -53,23 +65,23 @@ byte inv_s_box[16][16] = {
     {0x17, 0x2B, 0x04, 0x7E, 0xBA, 0x77, 0xD6, 0x26, 0xE1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0C, 0x7D}  
 };  
 
-word r_con[10] = {0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000,   
+Word r_con[10] = {0x01000000, 0x02000000, 0x04000000, 0x08000000, 0x10000000,   
                  0x20000000, 0x40000000, 0x80000000, 0x1b000000, 0x36000000};
 
 
-word getWord(byte, byte, byte, byte);
-word rotWord(word);
-word subWord(word);
-void expandedKey(byte key[4*Nk], word key_array_32[4*(Nr+1)]);
-void addRoundKey(byte state_array[16], word in_key[4]);
-void subBytes(byte state_array[16]);
-void shiftRows(byte state_array[16]);
-byte GFMul(byte, byte);
-void mixColumn(byte sate_array[16]);
-void aes_encrypt(byte state_array[16], word key_array32[4*(Nr+1)]);
-void inv_subBytes(byte cipher_state_array[16]);
-void inv_shiftRows(byte cipher_state_array[16]);
-void inv_mixColumn(byte cipher_state_array[16]);
-void aes_decrypt(byte cipher_state_array[16], word key_array32[4*(Nr+1)]);
+Word getWord(Byte, Byte, Byte, Byte);
+Word rotWord(Word);
+Word subWord(Word);
+void expandedKey(Byte key[4*Nk], Word key_array_32[4*(Nr+1)]);
+void addRoundKey(Byte state_array[16], Word in_key[4]);
+void subBytes(Byte state_array[16]);
+void shiftRows(Byte state_array[16]);
+Byte GFMul(Byte, Byte);
+void mixColumn(Byte sate_array[16]);
+void aes_encrypt(Byte state_array[16], Word key_array32[4*(Nr+1)]);
+void inv_subBytes(Byte cipher_state_array[16]);
+void inv_shiftRows(Byte cipher_state_array[16]);
+void inv_mixColumn(Byte cipher_state_array[16]);
+void aes_decrypt(Byte cipher_state_array[16], Word key_array32[4*(Nr+1)]);
 
 #endif
