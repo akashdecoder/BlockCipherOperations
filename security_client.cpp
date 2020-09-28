@@ -126,16 +126,12 @@ int main(){
             }
             aes_encrypt(state_array, key_array_32);
             for(int q=0; q<16; q++){
-                if (q>0 && q%4==0){
-                    cout<<endl;
-                }
-                cout<<hex<<state_array[q].to_ulong()<<"\t";
+                cout<<hex<<state_array[q].to_ulong();
                 cbc_encrypted_text[i][q] = state_array[q];
             }
-            cout<<"\n\n";
         }
 
-        cout<<"AES-CBC decrypted text\n";
+        cout<<"\n\nAES-CBC decrypted text\n";
         for(int i=0; i<c; i++){
             for(int j=0 ;j<16; j++){
                 cipher_state_array[j] = cbc_encrypted_text[i][j];
@@ -155,6 +151,34 @@ int main(){
                 cbc_decrypted_text[i][q] = cipher_state_array[q];
             }
         }
+    } else if(choice == "n"){
+        /*Encryption*/
+        cout<<"\n\nEncrypted Text:\n";
+        for(int i=0; i<c; i++){
+            for(int j=0; j<16; j++){
+                state_array[j] = plaintext_array[i][j];
+            }
+            aes_encrypt(state_array, key_array_32);
+            for(int q=0; q<16; q++){
+                encrypted_text[i][q] = state_array[q];
+            }
+            for(int k=0;k<16; k++){
+                cout<<hex<<state_array[k].to_ulong();
+            }
+        }
+
+        /*Decryption*/
+        cout<<"\n\nDecrypted Text:\n";
+        for(int i=0; i<c; i++){
+            for(int j=0; j<16; j++){
+                cipher_state_array[j] = encrypted_text[i][j];
+            }
+            aes_decrypt(cipher_state_array, key_array_32);
+            for(int k=0;k<16; k++){
+                cout<<(char)cipher_state_array[k].to_ulong();
+            }
+        }
+        cout<<endl;
     }
     cout<<endl;
     return 0;
