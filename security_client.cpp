@@ -1,4 +1,13 @@
+#ifdef _WIN32
+#include <iostream>
+#include <bitset>
+#include <cstring>
+#include <cstdlib>
+#include <sstream>
+#include <iomanip>
+#elif __linux__
 #include <bits/stdc++.h>
+#endif
 #include "AES/aes.h"
 using namespace std;
 
@@ -8,15 +17,15 @@ int main(){
     string key;
     getline(cin, key);
 
-    byte key_array[4*Nk];
-    byte plaintext_array[10000][4*Nk];
-    byte state_array[4*Nk];
-    byte cipher_state_array[4*Nk];
+    Byte key_array[4*Nk];
+    Byte plaintext_array[10000][4*Nk];
+    Byte state_array[4*Nk];
+    Byte cipher_state_array[4*Nk];
 
     u_i dec_values[16];
     string hex_values[16];
 
-    word key_array_32[4*(Nr+1)];
+    Word key_array_32[4*(Nr+1)];
 
     
     
@@ -45,8 +54,8 @@ int main(){
         index+=1;
         i = count;
     }
-    byte encrypted_text[c][16];
-    byte decrypted_text[c][16];
+    Byte encrypted_text[1000][16];
+    Byte decrypted_text[1000][16];
 
     cout<<endl<<c<<"\n\n";
 
