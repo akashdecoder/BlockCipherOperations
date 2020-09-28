@@ -2,8 +2,6 @@
 #include "AES/aes.h"
 using namespace std;
 
-
-
 int main(){
     string plaintext;
     getline(cin, plaintext);

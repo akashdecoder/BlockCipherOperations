@@ -2,6 +2,7 @@
 #include "aes.h"
 using namespace std;
 
+/*Convert byte to word*/
 word getWord(byte b1, byte b2, byte b3, byte b4){
     word result(0x00000000);
     word temp;

@@ -9,7 +9,7 @@ using namespace std;
 #define ll_i long long int
 #define u_i unsigned int
 #define u_c unsigned char
-#define Nr 10   //Key = 128 bits long
+#define Nr 10
 #define Nk 4
 
 typedef bitset<32> word;
