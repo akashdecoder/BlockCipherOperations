@@ -12,4 +12,7 @@ https://www.slideshare.net/AkashRanjandas1/advanced-encryption-standard-ug-resea
 https://www.geeksforgeeks.org/working-with-shared-libraries-set-2/
 
 
-## Testing: 
+## Block Cipher Modes Of Operation Presentation
+
+https://www.slideshare.net/AkashRanjandas1/block-cipher-modes-of-operations
+
