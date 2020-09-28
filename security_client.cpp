@@ -5,18 +5,16 @@
 #include <cstdlib>
 #include <sstream>
 #include <iomanip>
+#include <fstream>
 #elif __linux__
 #include <bits/stdc++.h>
 #endif
 #include "AES/aes.h"
 using namespace std;
 
-int main(){
-    string plaintext;
-    cout<<"Plaintext? -> ";
-    getline(cin, plaintext);
+int main(int argc, char* argv[]){
     string key;
-    cout<<"Key? ->";
+    cout<<"AES Key? ->";
     getline(cin, key);
     string choice, iv;
     cout<<"Do you want to use AES-CBC mode of encryption?y or n ->";
@@ -29,7 +27,6 @@ int main(){
     }
 
     Byte key_array[4*Nk];
-    Byte plaintext_array[10000][4*Nk];
     Byte state_array[4*Nk];
     Byte cipher_state_array[4*Nk];
     Byte initialization_vector[4*Nk];
@@ -50,36 +47,12 @@ int main(){
         hex_values[i] = res;
     }
 
-    cout<<"\n\nTotal length of the plaintext = "<<plaintext.size()<<endl;
+    Byte encrypted_text[10000][16];
+    Byte cbc_decrypted_text[10000][16];
+    Byte cbc_encrypted_text[10000][16];
+    Byte text_matrix[10000][4*Nk];
 
-    /*Create state matrix for the plaintext*/
-    int index = 0, count=0, c=0;
-    u_i i=0;
-    while(i<plaintext.size()){
-        c+=1;
-        for(int j=0;j<16;j++){
-            plaintext_array[index][j] = (int)plaintext[count];
-            count+=1;
-        }
-        index+=1;
-        i = count;
-    }
-    Byte encrypted_text[1000][16];
-    Byte cbc_decrypted_text[1000][16];
-    Byte cbc_encrypted_text[1000][16];
 
-    cout<<"\n\nTotal plaintext blocks each of size 128 bit = "<<endl<<c<<"\n\n";
-
-    /*print state mtrix*/
-    for(int i=0;i<c; i++){
-        cout<<"plain_text_block["<<i<<"]\t--->\t";
-        for(int j=0;j<16;j++){
-            cout<<dec<<plaintext_array[i][j].to_ulong()<<"\t";
-        }
-        cout<<endl;
-    }
-
-    cout<<endl;
 
     /*print binary format of the key*/
     cout<<"Key:\n";
@@ -98,22 +71,31 @@ int main(){
     for(int i=0;i<4*(Nr+1); i++){
         cout<<"expandedKey_w["<<dec<<i<<"]\t-->\t"<<hex<<key_array_32[i].to_ulong()<<"\n";
     }
-
-    
-
-    /*AES-CBC 128 bit encryption*/
     if(choice == "y"){
-        for(int i = 0;i<16; i++){
-            initialization_vector[i] = (int)iv[i];
-            stringstream ss_iv;
-            ss_iv << hex << (int)iv[i];
-            string res_iv(ss_iv.str());
-            iv_hex_values[i] = res_iv;
+        cout<<"\n\nAES - CBC Mode of encryption and decryption\n";
+        fstream plain_file, encrypted_file;
+        plain_file.open(argv[1], ios::in);
+        encrypted_file.open(argv[2], ios::trunc | ios::out | ios::in);
+        int row = 0, col = 0;
+        int drow=0, dcol=0;
+        
+        if(!plain_file){
+            cout<<"No such file exists\n";
+        } else{
+            char ch;
+            while(!plain_file.eof()){
+                plain_file.get(ch);
+                if(col == 16){
+                    row += 1;
+                    col = 0;
+                }
+                text_matrix[row][col] = (int)ch;
+                col+=1;
+            }
         }
-        cout<<"\n\nAES - CBC Encrypted tex\n";
-        for(int i=0; i<c; i++){
+        for(int i=0; i<=row; i++){
             for(int j=0; j<16; j++){
-                state_array[j] = plaintext_array[i][j];
+                state_array[j] = text_matrix[i][j];
             }
             if(i == 0){
                 for(int a=0; a<16; a++){
@@ -126,14 +108,40 @@ int main(){
             }
             aes_encrypt(state_array, key_array_32);
             for(int q=0; q<16; q++){
-                cout<<hex<<state_array[q].to_ulong();
                 cbc_encrypted_text[i][q] = state_array[q];
             }
         }
-
-        cout<<"\n\nAES-CBC decrypted text\n";
-        for(int i=0; i<c; i++){
-            for(int j=0 ;j<16; j++){
+        while(encrypted_file){
+            for(int i=0; i<=row; i++){
+                for(int j=0; j<16; j++){
+                    encrypted_file<< (char)cbc_encrypted_text[i][j].to_ulong();
+                }
+            }
+            cout<<"\n\nEncrypted file is created\n\n";
+            break;
+        }
+        encrypted_file.close();
+        plain_file.close();
+        cout<<"\n\n";
+        encrypted_file.open(argv[2], ios::in);
+        if(!encrypted_file){
+            cout<<"\nfile is not encrypted or doesnot exixts\n";   
+        }else{
+            char e_ch;
+            while(!encrypted_file.eof()){
+                encrypted_file.get(e_ch);
+                if(dcol == 16){
+                    drow += 1;
+                    dcol = 0;
+                }
+                cbc_encrypted_text[drow][dcol] = (int)e_ch;
+                dcol+=1;
+            }
+        }
+        cout<<endl;
+        cout<<"\n\nDecrypted file contents:\n\n";
+        for(int i=0; i<drow; i++){
+            for(int j=0; j<16; j++){
                 cipher_state_array[j] = cbc_encrypted_text[i][j];
             }
             aes_decrypt(cipher_state_array, key_array_32);
@@ -146,41 +154,81 @@ int main(){
                     cipher_state_array[a] = cipher_state_array[a] ^ cbc_encrypted_text[i-1][a];
                 }
             }
-            for(int q=0; q<16; q++){
-                cout<<(char)cipher_state_array[q].to_ulong();
-                cbc_decrypted_text[i][q] = cipher_state_array[q];
+            for(int a=0; a<16; a++){
+                cout<<(char)cipher_state_array[a].to_ulong();
             }
         }
+        encrypted_file.close();
     } else if(choice == "n"){
-        /*Encryption*/
-        cout<<"\n\nEncrypted Text:\n";
-        for(int i=0; i<c; i++){
+        cout<<"\n\nAES - ECB Mode of encryption and decryption\n";
+        fstream plain_file, encrypted_file;
+        plain_file.open(argv[1], ios::in);
+        encrypted_file.open(argv[2], ios::trunc | ios::out | ios::in);
+        int row = 0, col = 0;
+        int drow=0, dcol=0;
+        
+        if(!plain_file){
+            cout<<"No such file exists\n";
+        } else{
+            char ch;
+            while(!plain_file.eof()){
+                plain_file.get(ch);
+                if(col == 16){
+                    row += 1;
+                    col = 0;
+                }
+                text_matrix[row][col] = (int)ch;
+                col+=1;
+            }
+        }
+        for(int i=0; i<=row; i++){
             for(int j=0; j<16; j++){
-                state_array[j] = plaintext_array[i][j];
+                state_array[j] = text_matrix[i][j];
             }
             aes_encrypt(state_array, key_array_32);
             for(int q=0; q<16; q++){
-                encrypted_text[i][q] = state_array[q];
-            }
-            for(int k=0;k<16; k++){
-                cout<<hex<<state_array[k].to_ulong();
+                cbc_encrypted_text[i][q] = state_array[q];
             }
         }
-
-        /*Decryption*/
-        cout<<"\n\nDecrypted Text:\n";
-        for(int i=0; i<c; i++){
-            for(int j=0; j<16; j++){
-                cipher_state_array[j] = encrypted_text[i][j];
+        while(encrypted_file){
+            for(int i=0; i<=row; i++){
+                for(int j=0; j<16; j++){
+                    encrypted_file<< (char)cbc_encrypted_text[i][j].to_ulong();
+                }
             }
-            aes_decrypt(cipher_state_array, key_array_32);
-            for(int k=0;k<16; k++){
-                cout<<(char)cipher_state_array[k].to_ulong();
+            break;
+        }
+        encrypted_file.close();
+        plain_file.close();
+        cout<<"\n\n";
+        encrypted_file.open(argv[2], ios::in);
+        if(!encrypted_file){
+            cout<<"\nfile is not encrypted or doesnot exixts\n";   
+        }else{
+            char e_ch;
+            while(!encrypted_file.eof()){
+                encrypted_file.get(e_ch);
+                if(dcol == 16){
+                    drow += 1;
+                    dcol = 0;
+                }
+                cbc_encrypted_text[drow][dcol] = (int)e_ch;
+                dcol+=1;
             }
         }
         cout<<endl;
+        for(int i=0; i<drow; i++){
+            for(int j=0; j<16; j++){
+                cipher_state_array[j] = cbc_encrypted_text[i][j];
+            }
+            aes_decrypt(cipher_state_array, key_array_32);
+            for(int a=0; a<16; a++){
+                cout<<(char)cipher_state_array[a].to_ulong();
+            }
+        }
+        encrypted_file.close();
     }
+    
     cout<<endl;
     return 0;
-
 }
