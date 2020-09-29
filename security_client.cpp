@@ -196,6 +196,7 @@ int main(int argc, char* argv[]){
                     encrypted_file<< (char)cbc_encrypted_text[i][j].to_ulong();
                 }
             }
+            cout<<"\n\nEncrypted file is created\n\n";
             break;
         }
         encrypted_file.close();
@@ -217,6 +218,7 @@ int main(int argc, char* argv[]){
             }
         }
         cout<<endl;
+        cout<<"\n\nDecrypted file contents:\n\n";
         for(int i=0; i<drow; i++){
             for(int j=0; j<16; j++){
                 cipher_state_array[j] = cbc_encrypted_text[i][j];
