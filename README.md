@@ -26,7 +26,7 @@ $ cd /usr/local/lib
 
 $ sudo ldconfig
 
-$ g++ security_client.cpp -L/home/******/Desktop/Ug_Research/BlockCipherOperations -o security_client -laes
+$ g++ security_client.cpp -o security_client -laes
 
 $ ./security_client enc aes-128-cbc -in filename -out enc_filename
 
