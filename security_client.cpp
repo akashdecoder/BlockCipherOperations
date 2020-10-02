@@ -28,56 +28,40 @@ int main(int argc, char* argv[]){
     Byte cipher_state_array[4*Nk];
     Byte initialization_vector[4*Nk];
     Byte encrypted_text[10000][16];
+    Byte ecb_decrypted_text[10000][16];
+    Byte ecb_encrypted_text[10000][16];
     Byte cbc_decrypted_text[10000][16];
     Byte cbc_encrypted_text[10000][16];
     Byte text_matrix[10000][4*Nk];
 
     Word key_array_32[4*(Nr+1)];
-
+    string argv1 = argv[1];
+    string argv2 = argv[2];
+    string argv3 = argv[3];
+    string argv4 = argv[4];
+    string argv5 = argv[5];
+    string argv6 = argv[6];
     fstream plain_file, encrypted_file;
-    
-    while(1){
-        row = 0, col = 0;
-        drow=0, dcol=0;
-        cout<<"1. AES-ECB Mode operation\n2. AES-CBC Mode operation\n3. AES-GCM Mode Operation Mode\n4. Exit\n\n";
-        cout<<"Enter choice: ";
-        cin>>ch;
-        switch(ch){
-            case 1:
-                cout<<"AES Key? ->";
-                cin.ignore();
-                getline(cin, key);
-                /*Covert key to bits format*/
-                for(int i = 0;i<16; i++){
-                    dec_values[i] = (int)key[i];
-                    key_array[i] = dec_values[i];
-                    stringstream ss;
-                    ss << hex << dec_values[i];
-                    string res(ss.str());
-                    hex_values[i] = res;
-                }
-                /*print binary format of the key*/
-                cout<<"Key:\n";
-                for(int i=0 ;i<16; i++){
-                    if(i>0 && i%4==0){
-                        cout<<endl;
-                    }
-                    cout<<hex<<key_array[i].to_ulong()<< "\t";
-                }
+    if(argc > 3 || argc < 7){
+        cout<<"AES KEY? ->";
+        getline(cin, key);
 
-                cout<<"\n\n";
+        /*Covert key to bits format*/
+        for(int i = 0;i<16; i++){
+            dec_values[i] = (int)key[i];
+            key_array[i] = dec_values[i];
+            stringstream ss;
+            ss << hex << dec_values[i];
+            string res(ss.str());
+            hex_values[i] = res;
+        }
 
-                /*Expanded key*/
-                cout<<"Expanded Key: "<<endl;
-                expandedKey(key_array, key_array_32);
-                for(int i=0;i<4*(Nr+1); i++){
-                    cout<<"expandedKey_w["<<dec<<i<<"]\t-->\t"<<hex<<key_array_32[i].to_ulong()<<"\n";
-                }
-                cout<<"\n\nAES - ECB Mode of encryption and decryption\n";
-                plain_file.open(argv[1], ios::in);
-                encrypted_file.open(argv[2], ios::trunc | ios::out | ios::in);
-                
-                
+        expandedKey(key_array, key_array_32);
+
+        if((argv1.compare("enc") == 0) && (argv2.compare("aes-128-ecb") == 0)){
+            if((argv3.compare("-in") == 0) && argv4.empty() != true && (argv5.compare("-out") == 0) && (argv6.empty() != true)){
+                plain_file.open(argv4, ios::in);
+                encrypted_file.open(argv6, ios::trunc | ios::out | ios::in);
                 if(!plain_file){
                     cout<<"No such file exists\n";
                 } else{
@@ -98,13 +82,13 @@ int main(int argc, char* argv[]){
                     }
                     aes_encrypt(state_array, key_array_32);
                     for(int q=0; q<16; q++){
-                        cbc_encrypted_text[i][q] = state_array[q];
+                        ecb_encrypted_text[i][q] = state_array[q];
                     }
                 }
                 while(encrypted_file){
                     for(int i=0; i<=row; i++){
                         for(int j=0; j<16; j++){
-                            encrypted_file<< (char)cbc_encrypted_text[i][j].to_ulong();
+                            encrypted_file<< (char)ecb_encrypted_text[i][j].to_ulong();
                         }
                     }
                     cout<<"\n\nEncrypted file is created\n\n";
@@ -113,7 +97,10 @@ int main(int argc, char* argv[]){
                 encrypted_file.close();
                 plain_file.close();
                 cout<<"\n\n";
-                encrypted_file.open(argv[2], ios::in);
+            }
+        } else if((argv1.compare("dec") == 0) && (argv2.compare("aes-128-ecb") == 0)){
+            if((argv3.compare("-in") == 0) && (argv4.empty() != true)){
+                encrypted_file.open(argv4, ios::in);
                 if(!encrypted_file){
                     cout<<"\nfile is not encrypted or doesnot exixts\n";   
                 } else{
@@ -124,7 +111,7 @@ int main(int argc, char* argv[]){
                             drow += 1;
                             dcol = 0;
                         }
-                        cbc_encrypted_text[drow][dcol] = (int)e_ch;
+                        ecb_encrypted_text[drow][dcol] = (int)e_ch;
                         dcol+=1;
                     }
                 }
@@ -132,7 +119,7 @@ int main(int argc, char* argv[]){
                 cout<<"\n\nDecrypted file contents:\n\n";
                 for(int i=0; i<drow; i++){
                     for(int j=0; j<16; j++){
-                        cipher_state_array[j] = cbc_encrypted_text[i][j];
+                        cipher_state_array[j] = ecb_encrypted_text[i][j];
                     }
                     aes_decrypt(cipher_state_array, key_array_32);
                     for(int a=0; a<16; a++){
@@ -141,43 +128,16 @@ int main(int argc, char* argv[]){
                 }
                 encrypted_file.close();
                 cout<<"\n\n\n";
-            break;
-            case 2:
-                cout<<"AES Key? ->";
-                cin.ignore();
-                getline(cin, key);
+            }
+        } else if((argv1.compare("enc") == 0) && (argv2.compare("aes-128-cbc") == 0)){
+            if((argv3.compare("-in") == 0) && argv4.empty() != true && (argv5.compare("-out") == 0) && (argv6.empty() != true)){
                 cout<<"Initialization Vector? ->";
-                cin.ignore();
                 getline(cin, iv);
-                /*Covert key to bits format*/
-                for(int i = 0;i<16; i++){
-                    dec_values[i] = (int)key[i];
-                    key_array[i] = dec_values[i];
-                    stringstream ss;
-                    ss << hex << dec_values[i];
-                    string res(ss.str());
-                    hex_values[i] = res;
+                for(int i=0;i<16;i++){
+                    initialization_vector[i] = (int)iv[i];
                 }
-                /*print binary format of the key*/
-                cout<<"Key:\n";
-                for(int i=0 ;i<16; i++){
-                    if(i>0 && i%4==0){
-                        cout<<endl;
-                    }
-                    cout<<hex<<key_array[i].to_ulong()<< "\t";
-                }
-
-                cout<<"\n\n";
-
-                /*Expanded key*/
-                cout<<"Expanded Key: "<<endl;
-                expandedKey(key_array, key_array_32);
-                for(int i=0;i<4*(Nr+1); i++){
-                    cout<<"expandedKey_w["<<dec<<i<<"]\t-->\t"<<hex<<key_array_32[i].to_ulong()<<"\n";
-                }
-                plain_file.open(argv[1], ios::in);
-                encrypted_file.open(argv[2], ios::trunc | ios::out | ios::in);
-                
+                plain_file.open(argv4, ios::in);
+                encrypted_file.open(argv6, ios::trunc | ios::out | ios::in);
                 if(!plain_file){
                     cout<<"No such file exists\n";
                 } else{
@@ -222,7 +182,15 @@ int main(int argc, char* argv[]){
                 encrypted_file.close();
                 plain_file.close();
                 cout<<"\n\n";
-                encrypted_file.open(argv[2], ios::in);
+            }
+        } else if((argv1.compare("dec") == 0) && (argv2.compare("aes-128-cbc") == 0)){
+            if((argv3.compare("-in") == 0) && (argv4.empty() != true)){
+                cout<<"Initialization Vector? ->";
+                getline(cin, iv);
+                for(int i=0;i<16;i++){
+                    initialization_vector[i] = (int)iv[i];
+                }
+                encrypted_file.open(argv4, ios::in);
                 if(!encrypted_file){
                     cout<<"\nfile is not encrypted or doesnot exixts\n";   
                 }else{
@@ -259,17 +227,9 @@ int main(int argc, char* argv[]){
                 }
                 encrypted_file.close();
                 cout<<"\n\n\n";
-            break;
-            case 3:
-            cout<<"\nWorking on it.."<<endl;
-            break;
-            case 4:
-            exit(0);
-            default:
-            cout<<"Invalid Choice\n";
+            }
         }
     }
     
-    cout<<endl;
     return 0;
 }
