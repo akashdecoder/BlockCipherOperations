@@ -76,7 +76,7 @@ void expandedKey(Byte key[4*Nk], Word key_array_32[4*(Nr+1)]){
     }
 }
 
-/*Key Addition Dunction*/
+/*Key Addition Function*/
 void addRoundKey(Byte state_array[16], Word in_key[4]){
     for(int i=0; i<4; i++){
         Word k1 = in_key[i] >> 24;
