@@ -1,13 +1,4 @@
-#ifdef _WIN32
-#include <iostream>
-#include <bitset>
-#include <cstring>
-#include <cstdlib>
-#include <sstream>
-#include <iomanip>
-#elif __unix_
 #include <bits/stdc++.h>
-#endif
 #include "AES/aes.h"
 using namespace std;
 
